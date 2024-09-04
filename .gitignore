@@ -50,3 +50,15 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+udp_button_app/Windows
+udp_button_app/upd_button_app/build
+udp_button_app/.dart_tool
+udp_button_app/android/
+udp_button_app/ios/
+udp_button_app/linux/
+udp_button_app/macos/
+udp_button_app/web/
+udp_button_app/pubpsec.lock
+
+

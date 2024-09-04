@@ -6,10 +6,10 @@
 // Paramètres WiFi
 //const char *ssid = "ArduinoAP";
 //const char *password = "12345678";
-#define SSID "ARDUINOAP"
+#define SSID "SAMSUNG8342"
 #define PASSWORD "12345678"
 #define LOCALPORT 4000
-
+//#define CLOCKSIMULATOR 1
 #define NUM_FREQUENCIES 3
 #define CLOCK_OUTPUT 2
 #define CLOCK_PLL SI5351_PLL_A

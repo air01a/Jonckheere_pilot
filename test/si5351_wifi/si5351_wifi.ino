@@ -13,10 +13,13 @@
 
 void set_frequency() {
   FrequencyParams params = frequencies[freq_index];
+#ifndef CLOCKSIMULATOR
   clockgen.setupPLL(CLOCK_PLL,params.pll_mult,params.pll_num,params.pll_denom);
   clockgen.setupMultisynth(CLOCK_OUTPUT,CLOCK_PLL, params.ms_divider, params.ms_num, params.ms_denom);
   clockgen.setupRdiv(CLOCK_OUTPUT, r_div);
   clockgen.enableOutputs(true);
+#endif
+  Serial.println("New frequency set"); Serial.println("");
 
 }
 
@@ -81,13 +84,16 @@ void setup(void)
   Serial.begin(57600);
   Serial.println("Si5351 Clockgen Test"); Serial.println("");
 
+
+#ifndef CLOCKSIMULATOR
   /* Initialise the sensor */
   if (clockgen.begin() != ERROR_NONE)
   {
     /* There was a problem detecting the IC ... check your connections */
     Serial.print("Ooops, no Si5351 detected ... Check your wiring or I2C ADDR!");
-    while(1);
+   // while(1);
   }
+#endif
 
   Serial.println("OK!");
   setSidereal();
