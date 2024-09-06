@@ -32,7 +32,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final int serverPort = 4000;
   List<String> debugMessages = [];
   bool udp=false;
-
+  List<bool> _selections = [true, false, false]; // Le premier est sélectionné par défaut
+  String _selectedOption = 'sidereal';
 
    Future<void>  sendUdpMessage(String message) async {
     try {
@@ -168,6 +169,64 @@ Future<void> sendMessage(String message) async {
                 ),
               ],
             ),
+            GestureDetector(
+            onTapDown: (_) {
+              sendMessage("x4");
+            },
+            onTapUp: (_) {
+              sendMessage("x1");
+            },
+            child: Container(
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              color: Colors.blue,
+              child: Text(
+                'AD+',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
+
+          Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          ToggleButtons(
+            isSelected: _selections,
+            onPressed: (int index) {
+              setState(() {
+                for (int i = 0; i < _selections.length; i++) {
+                  _selections[i] = i == index;  // Seul un bouton peut être sélectionné
+                }
+                switch (index) {
+                  case 0:
+                    _selectedOption = 'sidereal';
+                    break;
+                  case 1:
+                    _selectedOption = 'lunar';
+                    break;
+                  case 2:
+                    _selectedOption = 'solar';
+                    break;
+                };
+                sendMessage(_selectedOption);
+              });
+            },
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text('Sidereal'),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text('Lunar'),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text('Solar'),
+              ),
+            ],
+          )]),
+
             SizedBox(height: 20), // Espacement avant la zone de débogage
           // Champ de texte multiligne pour afficher les messages de debug
           Expanded(
