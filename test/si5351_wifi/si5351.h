@@ -65,14 +65,15 @@ typedef struct {
     CommandFunction function;
 } Command;
 
+char *frequencyName = ["solar","sidereal","lunar"]
 
 Command commands[NUM_COMMANDS] = {
     {"sidereal", setSidereal},
     {"lunar", setLunar},
     {"solar", setSolar},
-    {"x2",x2},
     {"x1",x1},
+    {"x2",x2},
     {"x4",x4},
-    {"x16",x16}
+    {"x16",x16},
 };
 

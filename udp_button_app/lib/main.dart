@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:io'; // Pour la gestion du socket UDP
-import 'dart:convert'; // Pour encoder les chaînes de caractères
+import 'services/communicator.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,57 +27,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   // Adresse IP et port du serveur UDP
-  final String serverIp = "192.168.1.1";  // Remplacez par l'adresse IP de votre serveur
+  final String serverIp = "10.113.211.167";//"192.168.1.1";  // Remplacez par l'adresse IP de votre serveur
   final int serverPort = 4000;
   List<String> debugMessages = [];
   bool udp=false;
   List<bool> _selections = [true, false, false]; // Le premier est sélectionné par défaut
   String _selectedOption = 'sidereal';
-
-   Future<void>  sendUdpMessage(String message) async {
-    try {
-      RawDatagramSocket.bind(InternetAddress.anyIPv4, 0).then((socket) {
-        List<int> data = utf8.encode(message);
-        addDebugMessage('Envoi du message : $message');
-        socket.send(data, InternetAddress(serverIp), serverPort);
-        socket.close();
-        addDebugMessage('Message envoyé avec succès.');
-      }).catchError((error) {
-        addDebugMessage('Erreur lors de l\'envoi : $error');
-      });
-    } catch (e) {
-      addDebugMessage('Exception : $e');
-    }
-  }
-
-Future<void> sendTcpMessage(String message) async {
-    try {
-      // Établir une connexion TCP avec le serveur
-      Socket socket = await Socket.connect(serverIp, serverPort);
-      addDebugMessage('Connexion TCP établie avec le serveur.');
-
-      // Envoyer le message au serveur
-      socket.write(message);
-      addDebugMessage('Message envoyé : $message');
-
-      // Fermer la connexion TCP
-      socket.close();
-      addDebugMessage('Connexion TCP fermée.');
-    } catch (e) {
-      addDebugMessage('Erreur TCP : $e');
-    }
-  }
-
-
-  
-Future<void> sendMessage(String message) async {
-    if (udp==true) {
-      await  sendUdpMessage(message);
-    } else {
-      await  sendTcpMessage(message);
-    }
-  }
-
+  List<bool> _speedSelections = [true, false, false,false]; // Le premier est sélectionné par défaut
+  String _speedSelectedOption = 'x1';
+  bool hasError = false;
+  late Communicator communicator; 
 
 
   // Fonction pour ajouter des messages à l'interface de débogage
@@ -86,6 +44,64 @@ Future<void> sendMessage(String message) async {
     setState(() {
       debugMessages.add(message);
     });
+  }
+
+  void manageResult(String message) {
+    // Simule une opération asynchrone (ex : requête réseau, lecture de fichier, etc.)
+    //await sendTcpMessage("getParams", serverIp, serverPort);  // Attente de 2 secondes pour la simulation
+    List<String> segments = message.split('_');
+    // Lorsque l'opération asynchrone est terminée, mettre à jour les données
+    if (segments[0]=="OK") {
+        setState(() {
+          hasError=false;
+        },);
+    // Mettre à jour l'interface utilisateur avec les nouvelles données
+      if (segments.length==3) {
+        setState(() {
+          _selectedOption=segments[1];
+          _speedSelectedOption=segments[2];
+          switch(_selectedOption) {
+            case "sidereal":
+              _selections = [true, false, false];
+              break;
+            case "solar":
+              _selections=[false,false,true];
+              break;
+            case "lunar":
+              _selections=[false,true,false];
+          }
+          switch (_speedSelectedOption) {
+            case "x1":
+              _speedSelections=[true,false,false,false];
+              break;
+            case "x2":
+              _speedSelections=[false,true,false,false];
+              break;
+            case "x4":
+              _speedSelections=[false,false,true,false];
+              break;
+            case "x16":
+              _speedSelections=[false,false,false,true];
+              break;
+          }
+      });
+      }
+    }
+
+    // Exécuter le code que vous voulez après l'exécution asynchrone
+  }
+
+  void preSendFunction() {
+    setState(() {
+      hasError=true;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    communicator = Communicator(preSendFunction: preSendFunction, postSendFunction: manageResult, debug:addDebugMessage);
+    communicator.sendTcpMessage("getParams", serverIp, serverPort);
   }
 
   @override
@@ -98,94 +114,18 @@ Future<void> sendMessage(String message) async {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('TCP'),
-              Switch(
-                value: udp,
-                onChanged: (bool value) {
-                  setState(() {
-                    udp = value;  // Mettre à jour l'état du booléen
-                    addDebugMessage('Mode changé : ${udp ? "UDP" : "TCP"}');
-                  });
-                },
+            
+            SizedBox(height: 20),
+            Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: hasError ? Colors.red : Colors.green, // Rouge si problème, Vert sinon
+                ),
               ),
-              Text('UDP'),
-            ],
-          ),
-            // Première ligne avec 3 boutons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    sendMessage("sidereal");
-                  },
-                  child: Text('Sidereal'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    sendMessage("solar");
-                  },
-                  child: Text('Solar'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    sendMessage("lunar");
-                  },
-                  child: Text('lunar'),
-                ),
-              ],
-            ),
-            SizedBox(height: 20), // Espacement entre les lignes
-            // Deuxième ligne avec 4 boutons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    sendMessage("x1");
-                  },
-                  child: Text('x1'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    sendMessage("x2");
-                  },
-                  child: Text('x2'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    sendMessage("x4");
-                  },
-                  child: Text('x4'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    sendMessage("x16");
-                  },
-                  child: Text('x16'),
-                ),
-              ],
-            ),
-            GestureDetector(
-            onTapDown: (_) {
-              sendMessage("x4");
-            },
-            onTapUp: (_) {
-              sendMessage("x1");
-            },
-            child: Container(
-              margin: EdgeInsets.all(20),
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              color: Colors.blue,
-              child: Text(
-                'AD+',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-            ),
-          ),
+              SizedBox(height: 20),
+            
 
           Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -208,7 +148,7 @@ Future<void> sendMessage(String message) async {
                     _selectedOption = 'solar';
                     break;
                 };
-                sendMessage(_selectedOption);
+                communicator.sendTcpMessage(_selectedOption, serverIp, serverPort);
               });
             },
             children: <Widget>[
@@ -226,7 +166,129 @@ Future<void> sendMessage(String message) async {
               ),
             ],
           )]),
+           SizedBox(height: 20),
+        Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          ToggleButtons(
+            isSelected: _speedSelections,
+            onPressed: (int index) {
+              setState(() {
+                for (int i = 0; i < _speedSelections.length; i++) {
+                  _speedSelections[i] = i == index;  // Seul un bouton peut être sélectionné
+                }
+                switch (index) {
+                  case 0:
+                    _speedSelectedOption = 'x1';
+                    break;
+                  case 1:
+                    _speedSelectedOption = 'x2';
+                    break;
+                  case 2:
+                    _speedSelectedOption = 'x4';
+                    break;
+                  case 3:
+                    _speedSelectedOption = 'x16';
+                    break;
+                };
+                communicator.sendTcpMessage(_speedSelectedOption, serverIp, serverPort);
+              });
+            },
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text('x1'),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text('x2'),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text('x4'),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text('x16'),
+              ),
+            ],
+          )]),
+          GestureDetector(
+            onTapDown: (_) {
+              communicator.sendUdpMessage("DEC+", serverIp, serverPort);
+            },
+            onTapUp: (_) {
+              communicator.sendUdpMessage("DEC", serverIp, serverPort);
+            },
+            child: Container(
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              color: Colors.blue,
+              child: Text(
+                'DEC+',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
 
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+
+             GestureDetector(
+            onTapDown: (_) {
+              communicator.sendUdpMessage("AD-", serverIp, serverPort);
+            },
+            onTapUp: (_) {
+              communicator.sendUdpMessage("AD", serverIp, serverPort);
+            },
+            child: Container(
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              color: Colors.blue,
+              child: Text(
+                'AD-',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
+
+           GestureDetector(
+            onTapDown: (_) {
+              communicator.sendUdpMessage("AD+", serverIp, serverPort);
+            },
+            onTapUp: (_) {
+              communicator.sendUdpMessage("AD", serverIp, serverPort);
+            },
+            child: Container(
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              color: Colors.blue,
+              child: Text(
+                'AD+',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
+          ],),
+
+           GestureDetector(
+            onTapDown: (_) {
+              communicator.sendUdpMessage("DEC-", serverIp, serverPort);
+            },
+            onTapUp: (_) {
+              communicator.sendUdpMessage("DEC", serverIp, serverPort);
+            },
+            child: Container(
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              color: Colors.blue,
+              child: Text(
+                'DEC-',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
             SizedBox(height: 20), // Espacement avant la zone de débogage
           // Champ de texte multiligne pour afficher les messages de debug
           Expanded(

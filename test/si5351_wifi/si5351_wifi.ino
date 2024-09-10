@@ -2,15 +2,6 @@
 
 
 
-
-/**************************************************************************/
-/*
-    Arduino setup function (automatically called at startup)
-*/
-/**************************************************************************/
-
-
-
 void set_frequency() {
   FrequencyParams params = frequencies[freq_index];
 #ifndef CLOCKSIMULATOR
@@ -44,24 +35,52 @@ void setSolar(void)
 void x1(void)
 {
   r_div = SI5351_R_DIV_64;
-  set_frequency();
+  //set_frequency();
 }
 
 void x2(void)
 {
   r_div = SI5351_R_DIV_32;
-  set_frequency();
+  //set_frequency();
 }
 
 void x4(void)
 {
   r_div = SI5351_R_DIV_16;
-  set_frequency();
+  //set_frequency();
 }
 
 void x16(void)
 {
   r_div = SI5351_R_DIV_4;
+  //set_frequency();
+}
+
+void ad_stop(void) {
+  
+}
+
+void ad_plus(void) {
+  set_frequency();
+}
+
+void ad_minus(void) {
+  set_frequency();
+}
+
+void ad_plus(void) {
+  set_frequency();
+}
+
+void dec_stop() {
+
+}
+
+void dec_plus(void) {
+  set_frequency();
+}
+
+void dec_minus(void) {
   set_frequency();
 }
 
@@ -78,7 +97,11 @@ void executeCommand(const char* incomingPacket) {
     Serial.println("Chaîne inconnue reçue.");
 }
 
-
+/**************************************************************************/
+/*
+    Arduino setup function (automatically called at startup)
+*/
+/**************************************************************************/
 void setup(void)
 {
   Serial.begin(57600);
