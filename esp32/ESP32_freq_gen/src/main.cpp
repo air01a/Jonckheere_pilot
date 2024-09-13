@@ -1,10 +1,10 @@
-#include "si5351.h"
+#include "params.h"
 
 
 /***********************************************************/
 /*                   Manage si5351 command                 */
 /***********************************************************/
-void set_frequency(si5351PLL_t pll, uint8_t clock, FrequencyParams params, int rdiv) {
+void set_frequency(si5351PLL_t pll, uint8_t clock, FrequencyParams params, si5351RDiv_t r_div) {
 #ifndef CLOCKSIMULATOR
   clockgen.setupPLL(pll,params.pll_mult,params.pll_num,params.pll_denom);
   clockgen.setupMultisynth(clock,pll, params.ms_divider, params.ms_num, params.ms_denom);
@@ -14,108 +14,155 @@ void set_frequency(si5351PLL_t pll, uint8_t clock, FrequencyParams params, int r
   Serial.println("New frequency set"); Serial.println("");
 }
 
-void setADFrequencies(int rdiv){
+void setADFrequencies(si5351RDiv_t rdiv){
   FrequencyParams params = ADFrequencies[freq_index];
-  set_frequency(CLOCK_AD_PLL, CLOCK_AD_OUTPUT,  params, rdiv)
+  set_frequency(CLOCK_AD_PLL, CLOCK_AD_OUTPUT,  params, rdiv);
 }
 
-void setDECFrequencies(int rdiv){
+void setDECFrequencies(si5351RDiv_t rdiv){
   FrequencyParams params = ADFrequencies[freq_index];
-  set_frequency(CLOCK_DEC_PLL, CLOCK_DEC_OUTPUT, params, rdiv)
+  set_frequency(CLOCK_DEC_PLL, CLOCK_DEC_OUTPUT, params, rdiv);
 }
 
 
 //**********************************************************
 //*                    Manage mode command                  
 //**********************************************************
-void setLunar(void)
+void setLunar(char * response)
 {
   freq_index=2;
-  set_frequency();
+  setADFrequencies(SI5351_R_DIV_64);
+    strcpy(response, "OK");
+
 }
 
-void setSidereal(void)
+void setSidereal(char * response)
 {
   freq_index=1;
-  set_frequency();
+  setADFrequencies(SI5351_R_DIV_64);
+    strcpy(response, "OK");
+
 }
 
-void setSolar(void)
+void setSolar(char * response)
 {
   freq_index=0;
-  set_frequency();
+  setADFrequencies(SI5351_R_DIV_64);
+    strcpy(response, "OK");
+
 }
 
 /***********************************************************/
 /*                    Manage speed command                 */
 /***********************************************************/
-void x1(void)
+void x1(char * response)
 {
   r_div = SI5351_R_DIV_64;
+  strcpy(response, "OK");
 }
 
-void x2(void)
+void x2(char * response)
 {
   r_div = SI5351_R_DIV_32;
+    strcpy(response, "OK");
+
 }
 
-void x4(void)
+void x4(char * response)
 {
   r_div = SI5351_R_DIV_16;
+    strcpy(response, "OK");
+
 }
 
-void x16(void)
+void x16(char * response)
 {
   r_div = SI5351_R_DIV_4;
+    strcpy(response, "OK");
+
 }
 
+
+void getParams(char *response) {
+  const char* speed;
+
+  switch(r_div) {
+    case SI5351_R_DIV_4 :
+      speed="_x16";
+      break;
+    case SI5351_R_DIV_16 :
+      speed="_x4";
+      break;
+    case SI5351_R_DIV_32:
+      speed="_x2";
+      break;
+    default:
+      speed="_x1";
+      break;
+
+  }
+  strcpy(response, "OK_");
+  strcpy(response+3, frequencyName[freq_index]);
+  strcpy(response+strlen(response),speed);
+  
+}
 /***********************************************************/
 /*               Manage button press command               */
 /***********************************************************/
-void ad_stop(void) {
+void ad_stop(char * response) {
   digitalWrite(DIR_AD_PIN,HIGH);
   setADFrequencies(SI5351_R_DIV_64);
+    strcpy(response, "OK");
+
 }
 
-void ad_plus(void) {
+void ad_plus(char * response) {
   digitalWrite(DIR_AD_PIN,HIGH);
   setADFrequencies(r_div);
+    strcpy(response, "OK");
+
 }
 
-void ad_minus(void) {
+void ad_minus(char * response) {
   digitalWrite(DIR_AD_PIN,LOW);
   setADFrequencies(r_div);
+    strcpy(response, "OK");
+
 }
 
 
-void dec_stop() {
+void dec_stop(char * response) {
   //set_frequency(SI5351_R_DIV_64);
+    strcpy(response, "OK");
 
 }
 
-void dec_plus(void) {
+void dec_plus(char * response) {
  // set_frequency();
   digitalWrite(DIR_DEC_PIN,HIGH);
   setDECFrequencies(r_div);
+    strcpy(response, "OK");
 
 
 }
 
-void dec_minus(void) {
+void dec_minus(char * response) {
   digitalWrite(DIR_DEC_PIN,LOW);
-  setDECFrequencies
+  setDECFrequencies(r_div);
  // set_frequency();
+   strcpy(response, "OK");
+
 }
 
 /***********************************************************/
 /*                    Manage all command                   */
 /***********************************************************/
-void executeCommand(const char* incomingPacket) {
+void executeCommand(const char* incomingPacket, char * response) {
   Serial.println(incomingPacket);
     for (int i = 0; i < NUM_COMMANDS; i++) {
         if (strcmp(incomingPacket, commands[i].command) == 0) {
             Serial.println(commands[i].command);
-            commands[i].function();
+            commands[i].function(response);
             return;
         }
     }
@@ -131,7 +178,7 @@ void setup(void)
 {
   Serial.begin(57600);
   Serial.println("Si5351 Clockgen Test"); Serial.println("");
-
+  char response[50];
 
 #ifndef CLOCKSIMULATOR
   /* Initialise the sensor */
@@ -144,7 +191,7 @@ void setup(void)
 #endif
 
   Serial.println("OK!");
-  setSidereal();
+  setSidereal(response);
 
   // Configuration de l'IP statique pour le point d'accès
   if (!WiFi.softAPConfig(local_IP, gateway, subnet)) {
@@ -179,6 +226,7 @@ void setup(void)
 /**************************************************************************/
 void loop(void)
 {
+  char response[100]; 
   // Vérification des paquets UDP entrants
   int packetSize = Udp.parsePacket();
   if (packetSize) {
@@ -188,7 +236,10 @@ void loop(void)
       incomingPacket[len] = 0;
     }
     Serial.printf("Reçu %d bytes: %s\n", len, incomingPacket);
-    executeCommand(incomingPacket);
+    executeCommand(incomingPacket, response);
+    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+    Udp.write((const uint8_t *)response, strlen(response));
+    Udp.endPacket();
   }
 
   tcpClient = tcpServer.available();  // Vérifie si un client TCP est connecté
@@ -200,7 +251,8 @@ void loop(void)
             Serial.printf("Reçu %d bytes via TCP: %s\n", len, incomingPacket);
 
             // Exécuter la commande correspondante (traitement TCP)
-            executeCommand(incomingPacket);
+            executeCommand(incomingPacket, response);
+            tcpClient.write(response); 
       }
   }
 }

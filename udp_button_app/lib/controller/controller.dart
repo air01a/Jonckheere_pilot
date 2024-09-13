@@ -2,7 +2,7 @@ import '../services/communicator.dart';
 
 class Controller {
 
-  final String serverIp = "10.113.211.167";//"192.168.1.1";  // Remplacez par l'adresse IP de votre serveur
+  final String serverIp = "192.168.1.1";//"192.168.1.1";  // Remplacez par l'adresse IP de votre serveur
   final int serverPort = 4000;
 
   List<bool> modeSelections = [true, false, false]; // Le premier est sélectionné par défaut
@@ -77,7 +77,7 @@ class Controller {
     if (index != -1) {
       String cmd = possibleSpeed[index];
 
-      communicator.sendTcpMessage(cmd, serverIp, serverPort);
+      communicator.sendUdpMessage(cmd, serverIp, serverPort);
     }
   }
 
@@ -86,7 +86,7 @@ class Controller {
     int index = selection.indexOf(true);
     if (index != -1) {
       String cmd = possibleMode[index];
-      communicator.sendTcpMessage(cmd, serverIp, serverPort);
+      communicator.sendUdpMessage(cmd, serverIp, serverPort);
     }
   }
 

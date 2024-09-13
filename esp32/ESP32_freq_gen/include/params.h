@@ -1,9 +1,9 @@
-#include "Adafruit_SI5351.h"
-
 #include <Wire.h>
+#include "Adafruit_SI5351.h"
 #include <WiFi.h>     // Pour ESP32
 #include <WiFiUdp.h>
-
+#include <string>
+using namespace std;
 // Paramètres WiFi
 #define SSID "JONCKHEEREMOUNT"
 #define PASSWORD "12345678"
@@ -26,19 +26,19 @@
 #define DIR_DEC_PIN 16
 
 // List of available commands
-void setLunar(void);
-void setSidereal(void);
-void setSolar(void);
-void x1(void);
-void x2(void);
-void x4(void);
-void x16(void);
-void ad_stop(void);
-void ad_plus(void);
-void ad_minus(void);
-void dec_stop(void);
-void dec_minus(void);
-void dec_plus(void);
+void setLunar(char * response);
+void setSidereal(char * response);
+void setSolar(char * response);
+void x1(char * response);
+void x2(char * response);
+void x4(char * response);
+void x16(char * response);
+void ad_stop(char * response);
+void ad_plus(char * response);
+void ad_minus(char * response);
+void dec_stop(char * response);
+void dec_minus(char * response);
+void dec_plus(char * response);
 
 // Configuration de l'IP statique
 IPAddress local_IP(192, 168, 1, 1);        // IP fixe
@@ -80,14 +80,14 @@ FrequencyParams ADFrequencies[NUM_FREQUENCIES] = {
 
 
 // wifi Command structure
-typedef void (*CommandFunction)();  // Définir un type pour le pointeur de fonction
+typedef void (*CommandFunction)(char * );  // Définir un type pour le pointeur de fonction
 
-typedef struct {
+typedef struct  {
     const char* command;
     CommandFunction function;
 } Command;
 
-char *frequencyName = ["solar","sidereal","lunar"]
+const char *frequencyName[3] = {"solar", "sidereal","lunar"};
 
 Command commands[NUM_COMMANDS] = {
     {"AD+",ad_plus},
