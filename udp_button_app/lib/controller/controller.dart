@@ -2,7 +2,7 @@ import '../services/communicator.dart';
 
 class Controller {
 
-  final String serverIp = "192.168.1.1";//"192.168.1.1";  // Remplacez par l'adresse IP de votre serveur
+  final String serverIp = "127.0.0.1";//"192.168.1.1";//"192.168.1.1";//"192.168.1.1";  // Remplacez par l'adresse IP de votre serveur
   final int serverPort = 4000;
 
   List<bool> modeSelections = [true, false, false]; // Le premier est sélectionné par défaut
@@ -11,10 +11,25 @@ class Controller {
   List<String> possibleMode = ["sidereal","lunar","solar"];
   late Communicator communicator; 
   final Function onStateChanged;
+  Map<String, Function> callBack={};
 
   Controller(this.onStateChanged) {
     communicator = Communicator(preSendFunction: preSendFunction, postSendFunction: manageResult, debug:addDebugMessage);
     communicator.sendTcpMessage("getParams", serverIp, serverPort);
+    communicator.startUdpListening(listenerCallBack);
+
+  }
+
+
+  void listenerCallBack(String message) {
+      if (callBack.containsKey(message)) {
+    // Exécute la fonction correspondante
+        callBack[message]!();  // Le "!" est utilisé pour indiquer que la fonction n'est pas nulle
+      }
+  }
+
+  void addListener(String command, Function func) {
+    callBack.addAll({command: func});
   }
 
 
@@ -90,6 +105,20 @@ class Controller {
     }
   }
 
+
+  void moveCoupole(int direction) {
+    String cmd;
+    if (direction==-1) {
+      cmd="COU-";
+    } else {
+      if (direction==1) {
+        cmd="COU+";
+      } else {
+        cmd="COUSTOP";
+      }
+    }
+    communicator.sendUdpMessage(cmd, serverIp, serverPort);
+  }
 
   void changeAxisSpeed(int axis, int orientation) {
     String cmd;

@@ -103,9 +103,35 @@ void dec_plus(void) {
 
 void dec_minus(void) {
   digitalWrite(DIR_DEC_PIN,LOW);
-  setDECFrequencies
+  setDECFrequencies(r_div);
  // set_frequency();
 }
+
+
+/***********************************************************/
+/*               Manage Coupole                            */
+/***********************************************************/
+
+void cou_stop() {
+  //set_frequency(SI5351_R_DIV_64);
+  digitalWrite(DIR_COU1,LOW);
+    digitalWrite(DIR_COU2,LOW);
+
+}
+
+void cou_plus(void) {
+ // set_frequency();
+  digitalWrite(DIR_COU1,HIGH);
+    digitalWrite(DIR_COU2,LOW);
+
+}
+
+void dec_minus(void) {
+  digitalWrite(DIR_COU1,LOW);
+    digitalWrite(DIR_COU2,HIGH);
+}
+
+
 
 /***********************************************************/
 /*                    Manage all command                   */
@@ -120,6 +146,9 @@ void executeCommand(const char* incomingPacket) {
         }
     }
     Serial.println("Chaîne inconnue reçue.");
+    for(int i=0;i<NUM_COMMANDS;i++) {
+      print(commands[i]); 
+    }
 }
 
 /**************************************************************************/

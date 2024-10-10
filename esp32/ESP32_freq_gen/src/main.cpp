@@ -154,6 +154,33 @@ void dec_minus(char * response) {
 
 }
 
+
+/***********************************************************/
+/*               Manage Coupole                            */
+/***********************************************************/
+
+void cou_stop(char * response) {
+  //set_frequency(SI5351_R_DIV_64);
+  digitalWrite(DIR_COU1,LOW);
+    digitalWrite(DIR_COU2,LOW);
+   strcpy(response, "OK");
+
+}
+
+void cou_plus(char * response) {
+ // set_frequency();
+  digitalWrite(DIR_COU1,HIGH);
+    digitalWrite(DIR_COU2,LOW);
+   strcpy(response, "OK");
+
+}
+
+void cou_minus(char * response) {
+  digitalWrite(DIR_COU1,LOW);
+    digitalWrite(DIR_COU2,HIGH);
+       strcpy(response, "OK");
+
+}
 /***********************************************************/
 /*                    Manage all command                   */
 /***********************************************************/
@@ -167,6 +194,14 @@ void executeCommand(const char* incomingPacket, char * response) {
         }
     }
     Serial.println("Chaîne inconnue reçue.");
+}
+
+
+void endOfStroke(void) {
+    char *response="EOStroke";
+    Udp.beginPacket(broadcast, broadcastPort);
+    Udp.write((const uint8_t *)response, strlen(response));
+    Udp.endPacket();
 }
 
 /**************************************************************************/
@@ -215,6 +250,8 @@ void setup(void)
 
   pinMode(DIR_AD_PIN, OUTPUT);  // Configure le PIN comme une sortie
   pinMode(DIR_DEC_PIN, OUTPUT);  // Configure le PIN comme une sortie
+    pinMode(DIR_COU1, OUTPUT);  // Configure le PIN comme une sortie
+  pinMode(DIR_COU2, OUTPUT);  // Configure le PIN comme une sortie
 
 }
 

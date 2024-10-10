@@ -9,7 +9,7 @@ using namespace std;
 #define PASSWORD "12345678"
 #define LOCALPORT 4000
 //#define CLOCKSIMULATOR 1
-
+#define CLOCK_SIMULATOR 1
 
 #define NUM_FREQUENCIES 3
 // Output for AD and DEV
@@ -20,10 +20,12 @@ using namespace std;
 #define CLOCK_AD_PLL SI5351_PLL_A
 #define CLOCK_DEC_PLL SI5351_PLL_B
 
-#define NUM_COMMANDS 13
+#define NUM_COMMANDS 16
 // PIN For orientation 
 #define DIR_AD_PIN 15
 #define DIR_DEC_PIN 16
+#define DIR_COU1  25
+#define DIR_COU2 26
 
 // List of available commands
 void setLunar(char * response);
@@ -39,12 +41,16 @@ void ad_minus(char * response);
 void dec_stop(char * response);
 void dec_minus(char * response);
 void dec_plus(char * response);
+void cou_plus(char * response);
+void cou_minus (char * response);
+void cou_stop(char * response);
 
 // Configuration de l'IP statique
 IPAddress local_IP(192, 168, 1, 1);        // IP fixe
 IPAddress gateway(192, 168, 1, 1);         // Passerelle
 IPAddress subnet(255, 255, 255, 0);        // Masque de sous-réseau
-
+IPAddress broadcast(192,168,1,255);
+#define broadcastPort 4000
 // Configuration UDP
 WiFiUDP Udp;
 char incomingPacket[255];  // Buffer pour les paquets entrants
@@ -102,7 +108,10 @@ Command commands[NUM_COMMANDS] = {
     {"x1",x1},
     {"x2",x2},
     {"x4",x4},
-    {"x16",x16}
+    {"x16",x16},
+        {"COU+",cou_plus},
+    {"COU-",cou_minus},
+    {"COUSTOP",cou_stop}
 
 };
 

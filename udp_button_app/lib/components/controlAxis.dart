@@ -1,9 +1,36 @@
 import 'package:flutter/material.dart';
+import '../controller/controller.dart';
 
-class ControlAxis extends StatelessWidget {
-  Function sendControl;
+class ControlAxis extends StatefulWidget {
+  Controller control;
 
-  ControlAxis({required this.sendControl});
+  ControlAxis({required this.control});
+  @override
+  _ControlAxisState createState() => _ControlAxisState();
+}
+
+class _ControlAxisState extends State<ControlAxis> { 
+ bool endStroke = false;
+
+  @override
+  void initState(){
+    super.initState();
+    widget.control.addListener("EOStroke", onEndOfStroke);
+  }
+
+
+  void onEndOfStroke(){
+    setState(() {
+      endStroke=true;
+    });
+  }
+
+  void resetEndOfStroke(){
+    setState(() {
+      endStroke=false;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +39,12 @@ class ControlAxis extends StatelessWidget {
           children:<Widget>[
           GestureDetector(
             onTapDown: (_) {
-              sendControl(1,1);
+              resetEndOfStroke();
+
+              widget.control.changeAxisSpeed(1,1);
             },
             onTapUp: (_) {
-              sendControl(1,0);
+              widget.control.changeAxisSpeed(1,0);
             },
             child: Container(
               margin: EdgeInsets.all(20),
@@ -34,10 +63,10 @@ class ControlAxis extends StatelessWidget {
 
              GestureDetector(
             onTapDown: (_) {
-              sendControl(0,-1);
+              widget.control.changeAxisSpeed(0,-1);
             },
             onTapUp: (_) {
-              sendControl(0,0);
+              widget.control.changeAxisSpeed(0,0);
             },
             child: Container(
               margin: EdgeInsets.all(20),
@@ -49,13 +78,21 @@ class ControlAxis extends StatelessWidget {
               ),
             ),
           ),
+          Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: endStroke ? Colors.red : Colors.green, // Rouge si problème, Vert sinon
+                ),
+              ),
 
            GestureDetector(
             onTapDown: (_) {
-             sendControl(0,1);
+             widget.control.changeAxisSpeed(0,1);
             },
             onTapUp: (_) {
-              sendControl(0,0);
+              widget.control.changeAxisSpeed(0,0);
             },
             child: Container(
               margin: EdgeInsets.all(20),
@@ -71,10 +108,12 @@ class ControlAxis extends StatelessWidget {
 
            GestureDetector(
             onTapDown: (_) {
-              sendControl(1,-1);
+              resetEndOfStroke();
+
+              widget.control.changeAxisSpeed(1,-1);
             },
             onTapUp: (_) {
-              sendControl(1,0);
+              widget.control.changeAxisSpeed(1,0);
             },
             child: Container(
               margin: EdgeInsets.all(20),

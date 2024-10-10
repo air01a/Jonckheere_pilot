@@ -4,10 +4,13 @@ import threading
 # Variables internes
 frequency="sidereal"
 speed="x1"
+
+DECcounter=20
 # Mise à jour des variables
 def manageCommand(command):
     global frequency
     global speed
+    global DECcounter
     response = "UNKNOWN"
     if command in ['x1','x2','x4','x16']:
         speed=command
@@ -20,6 +23,19 @@ def manageCommand(command):
     elif command in ['AD','AD+','AD-','DEC+','DEC-','DEC']:
         response="OK"
     print(command)
+    if command in ['DEC+','DEC-']:
+        if command=='DEC+':
+            DECcounter+=1
+        else:
+            DECcounter-=1
+        if DECcounter<0 or DECcounter>40:
+            broadcast_address = '<broadcast>'
+            port = 4001
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            # Envoie le message
+            sock.sendto('EOStroke'.encode('utf-8'), (broadcast_address, port))
+            print("EOSTRIKE SENT")
     return response
 
 # Fonction pour gérer les connexions TCP
@@ -55,6 +71,7 @@ def udp_server(host, port):
         command = data.decode('utf-8')
         response = manageCommand(command)
         server.sendto(response.encode('utf-8'), addr)
+
 
 # Lancement des serveurs TCP et UDP
 def start_servers():

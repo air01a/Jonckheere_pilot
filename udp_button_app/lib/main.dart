@@ -3,6 +3,7 @@ import 'controller/controller.dart';
 import 'components/speedSelector.dart';
 import 'components/modeSelector.dart';
 import 'components/controlAxis.dart';
+import 'components/controlCoupole.dart';
 
 void main() {
   runApp(MyApp());
@@ -68,11 +69,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               SizedBox(height: 20),
-            ModeSelector(modeSelected: controller.modeSelections, onValueChanged: controller.changeMode)
-            ,
-           SizedBox(height: 20),
-          SpeedSelector(speedSelections : controller.speedSelections, onValueChanged: controller.changeSpeed),
-          ControlAxis(sendControl:controller.changeAxisSpeed),
+              ModeSelector(modeSelected: controller.modeSelections, onValueChanged: controller.changeMode),
+              SizedBox(height: 20),
+              SpeedSelector(speedSelections : controller.speedSelections, onValueChanged: controller.changeSpeed),
+              ControlAxis(control:controller),
+              ControlCoupole(control:controller),
           ],
         ),
       ),

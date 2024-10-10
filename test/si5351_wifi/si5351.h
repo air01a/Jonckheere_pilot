@@ -20,10 +20,12 @@
 #define CLOCK_AD_PLL SI5351_PLL_A
 #define CLOCK_DEC_PLL SI5351_PLL_B
 
-#define NUM_COMMANDS 13
+#define NUM_COMMANDS 16
 // PIN For orientation 
 #define DIR_AD_PIN 15
 #define DIR_DEC_PIN 16
+#define DIR_COU1  25
+#define DIR_COU2 26
 
 // List of available commands
 void setLunar(void);
@@ -102,7 +104,10 @@ Command commands[NUM_COMMANDS] = {
     {"x1",x1},
     {"x2",x2},
     {"x4",x4},
-    {"x16",x16}
+    {"x16",x16},
+    {"COU+",cou_plus},
+    {"COU-",cou_minus},
+    {"COUSTOP",cou_stop},
 
 };
 

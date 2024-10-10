@@ -7,6 +7,7 @@ class Communicator {
   final Function preSendFunction;
   final Function postSendFunction;
   final Function debug;
+  RawDatagramSocket? socket;
 
   Communicator({required this.preSendFunction, required this.postSendFunction, required this.debug});
 
@@ -79,4 +80,33 @@ class Communicator {
       debug('Erreur TCP : $e');
     }
   }
+
+
+  void onPacketReceived(String message, InternetAddress senderAddress) {
+    print('Paquet reçu: $message de $senderAddress');
+    // Place ici la logique à exécuter lorsque le paquet est reçu
+  }
+
+  // Démarre l'écoute UDP avec RawDatagramSocket
+  Future<void> startUdpListening(Function callback) async {
+    // Crée un RawDatagramSocket lié au port 4000
+    RawDatagramSocket.bind(InternetAddress.anyIPv4, 4001).then((RawDatagramSocket udpSocket) {
+      socket = udpSocket;
+
+      // Ecoute les événements sur le socket
+      udpSocket.listen((RawSocketEvent event) {
+        if (event == RawSocketEvent.read) {
+          Datagram? datagram = udpSocket.receive();
+          if (datagram != null) {
+            String message = utf8.decode(datagram.data);
+            //InternetAddress senderAddress = datagram.address;
+            callback(message);
+            // Appelle la fonction à l'arrivée du paquet
+            //onPacketReceived(message, senderAddress);
+          }
+        }
+      });
+    });
+  }
+
 }
