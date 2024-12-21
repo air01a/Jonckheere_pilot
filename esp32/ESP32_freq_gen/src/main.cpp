@@ -31,7 +31,7 @@ void setDECFrequencies(si5351RDiv_t rdiv){
 void setLunar(char * response)
 {
   freq_index=2;
-  setADFrequencies(SI5351_R_DIV_64);
+  setADFrequencies(ADFrequencies[freq_index].r_div);
     strcpy(response, "OK");
 
 }
@@ -39,7 +39,7 @@ void setLunar(char * response)
 void setSidereal(char * response)
 {
   freq_index=1;
-  setADFrequencies(SI5351_R_DIV_64);
+  setADFrequencies(ADFrequencies[freq_index].r_div);
     strcpy(response, "OK");
 
 }
@@ -47,7 +47,7 @@ void setSidereal(char * response)
 void setSolar(char * response)
 {
   freq_index=0;
-  setADFrequencies(SI5351_R_DIV_64);
+  setADFrequencies(ADFrequencies[freq_index].r_div);
     strcpy(response, "OK");
 
 }

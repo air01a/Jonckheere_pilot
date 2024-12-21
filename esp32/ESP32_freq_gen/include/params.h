@@ -9,7 +9,7 @@ using namespace std;
 #define PASSWORD "12345678"
 #define LOCALPORT 4000
 //#define CLOCKSIMULATOR 1
-#define CLOCK_SIMULATOR 1
+//#define CLOCK_SIMULATOR 0
 
 #define NUM_FREQUENCIES 3
 // Output for AD and DEV
@@ -67,21 +67,35 @@ typedef struct {
     uint32_t ms_divider; // d
     uint32_t ms_num;     // e
     uint32_t ms_denom;   // f
-    uint8_t r_div;       // R
+    si5351RDiv_t r_div;       // R
 } FrequencyParams;
 
 // Si5351 divider
 si5351RDiv_t r_div = SI5351_R_DIV_64;
 int freq_index = 0;
 
+
+/* Frequency to reach 
+10,5186kHz Sidereal
+10,4899khz solar
+10,1338khz lunar
+
+Period for sid, sol, lun : 
+19,014.10-3
+19,066.10-3
+19,736.10-3
+
+and with divider 200 to calculate frequency
+
+*/
 // List of base frequencies form mode
 FrequencyParams ADFrequencies[NUM_FREQUENCIES] = {
     // Fréquence 1
-    {24, 23607, 997652, 697, 0, 1, SI5351_R_DIV_64}, // "sidereal"
+    {24, 3004,395017, 894, 0, 1, SI5351_R_DIV_64}, // "solar"
     // Fréquence 2
-    {24, 6293, 234048, 699, 0, 1, SI5351_R_DIV_64}, // "solar"
+    {24, 19438,1000233, 892, 0, 1, SI5351_R_DIV_64}, // "sidereal"
     // Fréquence 3
-    {24, 4303, 526562, 723, 0, 1, SI5351_R_DIV_64}  // "lunar"
+    {24, 23844, 1046665, 463, 0, 1, SI5351_R_DIV_128}  // "lunar"
 };
 
 
